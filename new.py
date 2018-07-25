@@ -8,7 +8,7 @@ import fct_salted_sale_predict
 def update_salted_sale_predict_(today):
     start_time = time()
     # 读取数据
-    conn = psycopg2.connect('dbname=gpdb user=gpadmin password=bigdata2018 host=47.98.135.132 port=2345')
+    conn = psycopg2.connect('dbname=dbname user=user password=password host=host port=port')
     origin_data = pd.read_sql('''select * from rst.fct_salted_sale_feat
                                  where sale_date >= '%s'::date -365
                                  and sale_date < '%s'::date''' % (today.strftime('%Y%m%d'), today.strftime('%Y%m%d')),
@@ -28,7 +28,7 @@ def update_salted_sale_predict_(today):
 
     
     # 更新数据库
-    conn = psycopg2.connect('dbname=gpdb user=gpadmin password=bigdata2018 host=47.98.135.132 port=2345')
+    conn = psycopg2.connect('dbname=dbname user=user password=password host=host port=port')
     predict_data_need_to_fill = pd.read_sql("select * from rst.fct_salted_sale_predict where predict_date='%s'::date-1"%today.strftime("%Y%m%d"),con=conn)
     feat_data_real = pd.read_sql("select product_code,qty_sum as real_qty_sum ,sale_date as predict_date from rst.fct_salted_sale_feat where sale_date='%s'::date-1"%(today.strftime('%Y%m%d')),con=conn)
 
@@ -43,7 +43,7 @@ def update_salted_sale_predict_(today):
     conn.close()
     predict_data_filled = pd.merge(predict_data_need_to_fill.drop('real_qty_sum',axis=1),feat_data_real,how="left")
 
-    source_engine = 'postgresql+psycopg2://gpadmin:bigdata2018@47.98.135.132:2345/gpdb'
+    source_engine = 'postgresql+psycopg2://user:password@host:port/dbname'
     engine = create_engine(source_engine)
     pd.concat([salted_predict_result_df,predict_data_filled],axis=0).to_sql('fct_salted_sale_predict', schema='rst', con=engine, if_exists='append', index=False)
     salted_model.feature.to_csv("feature.csv")
