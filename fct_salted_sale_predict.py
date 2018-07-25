@@ -38,9 +38,9 @@ class fct_sale_predict:
 
     # 初始化
     def initial(self):
-        self.source_engine = 'postgresql+psycopg2://gpadmin:bigdata2018@47.98.135.132:2345/gpdb'
+        self.source_engine = 'postgresql+psycopg2://user:password@host:port/dbname'
         self.engine = create_engine(self.source_engine)
-        self.conn = psycopg2.connect('dbname=gpdb user=gpadmin password=bigdata2018 host=47.98.135.132 port=2345')
+        self.conn = psycopg2.connect('dbname=dbname user=user password=password host=host port=port')
         self.date_ahead = pd.read_sql("select * from rst.dim_product_salted_period", con=self.conn)
         self.date_ahead.set_index('product_code', inplace=True)
         self.date_ahead.rename(columns={'period_amount': 'delay'}, inplace=True)
@@ -123,7 +123,7 @@ class fct_sale_predict:
             self.conn.close()
             print(self.feature_append.shape)
             self.feature_append.to_sql('fct_salted_sale_feat2', schema='rst', con=self.engine, if_exists=exist,index=False)
-            self.conn = psycopg2.connect('dbname=gpdb user=gpadmin password=bigdata2018 host=47.98.135.132 port=2345')
+            self.conn = psycopg2.connect('dbname=dbname user=user password=password host=host port=port')
             self.feature_append.set_index("sale_date", inplace=True)
             self.feature = pd.concat([self.feature, self.feature_append], axis=0).sort_index()
 
